@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stilo Único Indumentaria</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .top-bar {
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            padding: 8px 10px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        header {
+            background-color: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: #000;
+            letter-spacing: 2px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #555;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        nav ul li a:hover {
+            color: #000;
+        }
+
+        .section {
+            display: none;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .promo-carousel {
+            background-color: #fff;
+            border: 1px solid #e5e5e5;
+            padding: 20px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .promo-carousel h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .carousel-track-container {
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .carousel-track {
+            display: flex;
+            gap: 15px;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .promo-img-only {
+            width: 180px;
+            height: 240px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 1px solid #eee;
+            transition: transform 0.3s ease;
+        }
+
+        .promo-img-only:hover {
+            transform: scale(1.03);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background-color: #fff;
+            border: 1px solid #e5e5e5;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .card-img-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            background-color: #f0f0f0;
+            margin-bottom: 15px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .card-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(250,250,250,0.8);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            z-index: 2;
+            transition: background 0.3s;
+        }
+
+        .card-arrow:hover {
+            background: #fff;
+        }
+
+        .card-arrow.prev { left: 5px; }
+        .card-arrow.next { right: 5px; }
+
+        .product-card h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .product-card .price {
+            font-weight: bold;
+            color: #111;
+            margin-bottom: 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #fff;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media(min-width: 600px) {
+            .modal-detail-layout {
+                display: flex;
+                gap: 30px;
+            }
+            .modal-left { flex: 1; }
+            .modal-right { flex: 1; }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .modal-carousel {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            background: #f0f0f0;
+        }
+
+        .modal-carousel img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        .contact-form {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .contact-form input, .contact-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .btn {
+            background: #000;
+            color: #fff;
+            padding: 12px;
+            border: none;
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: #333;
+        }
+
+        #admin-panel {
+            display: none;
+            background: #f1f1f1;
+            border-top: 2px solid #000;
+            padding: 30px 20px;
+            margin-top: 50px;
+        }
+
+        .admin-section {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">Envíos a todo el país - 3 cuotas sin interés</div>
+
+    <header>
+        <div class="header-container">
+            <a class="logo" id="logo-btn" onclick="handleLogoClick()">STILO ÚNICO</a>
+            <nav>
+                <ul>
+                    <li><a onclick="switchSection('inicio')">Inicio</a></li>
+                    <li><a onclick="switchSection('productos-all')">Productos</a></li>
+                    <li><a onclick="switchSection('contacto')">Contacto</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section id="inicio" class="section active">
+        <div class="promo-carousel" id="promo-carousel-wrapper">
+            <h2>Promociones / Tendencias</h2>
+            <div class="carousel-track-container">
+                <div class="carousel-track" id="carousel-promo-track"></div>
+            </div>
+        </div>
+
+        <h2 style="text-align: center; margin-bottom: 30px; text-transform: uppercase;">Novedades</h2>
+        <div class="products-grid" id="featured-products"></div>
+    </section>
+
+    <section id="productos-all" class="section">
+        <h2 style="text-align: center; margin-bottom: 30px; text-transform: uppercase;">Catálogo Completo</h2>
+        <div class="products-grid" id="all-products"></div>
+    </section>
+
+    <section id="contacto" class="section">
+        <h2 style="text-align: center; margin-bottom: 30px; text-transform: uppercase;">Contacto</h2>
+        <form class="contact-form" onsubmit="sendContactWhatsApp(event)">
+            <input type="text" id="c-name" placeholder="Nombre completo" required>
+            <input type="email" id="c-email" placeholder="Correo electrónico" required>
+            <textarea id="c-message" rows="5" placeholder="Escribe tu consulta aquí..." required></textarea>
+            <button type="submit" class="btn">Enviar Consulta por WhatsApp</button>
+        </form>
+    </section>
+
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeProductModal()">&times;</button>
+            <div class="modal-detail-layout">
+                <div class="modal-left">
+                    <div class="modal-carousel">
+                        <button class="card-arrow prev" onclick="moveModalImg(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                        <img id="modal-main-img" src="" alt="Producto">
+                        <button class="card-arrow next" onclick="moveModalImg(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="modal-right">
+                    <h2 id="modal-title" style="text-transform: uppercase; margin-bottom: 10px;"></h2>
+                    <p id="modal-price" style="font-size: 1.25rem; font-weight: bold; margin-bottom: 15px; color: #000;"></p>
+                    <p id="modal-desc" style="color: #666; line-height: 1.6; margin-bottom: 20px;"></p>
+                    <button class="btn" style="width: 100%;" onclick="buyViaWhatsApp()">Comprar por WhatsApp</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-panel">
+        <div class="admin-section">
+            <h2 style="margin-bottom: 20px; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 10px;">Gestión de Productos (Administrador)</h2>
+            
+            <div style="background: #fff; padding: 20px; border: 1px solid #ccc; margin-bottom: 30px;">
+                <h3 id="form-admin-title">Agregar Nuevo Producto</h3>
+                <input type="hidden" id="admin-edit-id" value="">
+                
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="admin-name">
+                </div>
+                <div class="form-group">
+                    <label>Precio</label>
+                    <input type="number" id="admin-price">
+                </div>
+                <div class="form-group">
+                    <label>Descripción detallada</label>
+                    <textarea id="admin-desc" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>URLs de Imágenes (Separadas por coma si son varias)</label>
+                    <input type="text" id="admin-imgs" placeholder="https://ejemplo.com/1.jpg, https://ejemplo.com/2.jpg">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="admin-is-promo"> Destacar directamente en carrusel de promociones
+                    </label>
+                </div>
+                <button type="button" class="btn" id="btn-submit-admin" onclick="saveProductFromAdmin()">Guardar Producto</button>
+                <button type="button" class="btn" id="btn-cancel-edit" style="background:#666; display:none; margin-top:10px;" onclick="cancelEditMode()">Cancelar Edición</button>
+            </div>
+
+            <h3>Listado de Stock y Carril de Promociones</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>En Carrusel Promo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-stock-list"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const WHATSAPP_NUMBER = "59899000000"; 
+        const SECRET_KEY = "admin123";
+
+        let logoClickCount = 0;
+        let logoClickTimeout;
+
+        let productos = [
+            {
+                id: 1,
+                name: "Campera Denim Premium",
+                price: 4890,
+                desc: "Campera de jean oversize confeccionada con denim premium de alta resistencia.",
+                images: ["https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500"],
+                promo: true,
+                currentImgIndex: 0
+            },
+            {
+                id: 2,
+                name: "Buzo Oversize Hoodie Black",
+                price: 3200,
+                desc: "Buzo frisado de algodón rústico súper abrigado con capucha pesada.",
+                images: ["https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500"],
+                promo: true,
+                currentImgIndex: 0
+            }
+        ];
+
+        let selectedProductForModal = null;
+
+        function init() {
+            renderProducts();
+            renderAdminStock();
+            setupKeyboardAccess();
+        }
+
+        function checkAdminAccess() {
+            const passwordInput = prompt("Introduce la contraseña de administración:");
+            if (!passwordInput) return;
+
+            if (passwordInput.trim() === SECRET_KEY) {
+                const panel = document.getElementById('admin-panel');
+                panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+                if(panel.style.display === 'block') {
+                    panel.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else {
+                alert("Contraseña incorrecta. Acceso denegado.");
+            }
+        }
+
+        function handleLogoClick() {
+            logoClickCount++;
+            clearTimeout(logoClickTimeout);
+            logoClickTimeout = setTimeout(() => { logoClickCount = 0; }, 1000);
+
+            if (logoClickCount === 3) {
+                logoClickCount = 0;
+                checkAdminAccess();
+            } else {
+                switchSection('inicio');
+            }
+        }
+
+        function setupKeyboardAccess() {
+            window.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+                    e.preventDefault();
+                    checkAdminAccess();
+                }
+            });
+        }
+
+        function switchSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        function renderProducts() {
+            const featuredContainer = document.getElementById('featured-products');
+            const allContainer = document.getElementById('all-products');
+            const promoTrack = document.getElementById('carousel-promo-track');
+            
+            featuredContainer.innerHTML = '';
+            allContainer.innerHTML = '';
+            promoTrack.innerHTML = '';
+
+            productos.forEach(p => {
+                const cardHTML = createProductCardHTML(p);
+                allContainer.innerHTML += cardHTML;
+                featuredContainer.innerHTML += cardHTML;
+
+                if(p.promo) {
+                    const imgUrl = p.images[0] || 'https://via.placeholder.com/180x240?text=Sin+Foto';
+                    const imgElement = document.createElement('img');
+                    imgElement.src = imgUrl;
+                    imgElement.alt = p.name;
+                    imgElement.className = "promo-img-only";
+                    imgElement.onclick = () => openProductModal(p.id);
+                    promoTrack.appendChild(imgElement);
+                }
+            });
+        }
+
+        function createProductCardHTML(p) {
+            const currentImg = p.images[p.currentImgIndex] || 'https://via.placeholder.com/250x280?text=Sin+Foto';
+            const hasArrows = p.images.length > 1;
+
+            return `
+                <div class="product-card">
+                    <div class="card-img-container">
+                        ${hasArrows ? `<button class="card-arrow prev" onclick="event.stopPropagation(); changeCardImage(${p.id}, -1)"><i class="fa-solid fa-chevron-left"></i></button>` : ''}
+                        <img src="${currentImg}" alt="${p.name}" onclick="openProductModal(${p.id})">
+                        ${hasArrows ? `<button class="card-arrow next" onclick="event.stopPropagation(); changeCardImage(${p.id}, 1)"><i class="fa-solid fa-chevron-right"></i></button>` : ''}
+                    </div>
+                    <h3 onclick="openProductModal(${p.id})">${p.name}</h3>
+                    <div class="price">$${p.price}</div>
+                    <button class="btn" style="padding: 8px 10px; font-size:0.85rem;" onclick="openProductModal(${p.id})">Ver Detalles</button>
+                </div>
+            `;
+        }
+
+        function changeCardImage(id, dir) {
+            const prod = productos.find(p => p.id === id);
+            if (!prod) return;
+            prod.currentImgIndex += dir;
+            if (prod.currentImgIndex < 0) prod.currentImgIndex = prod.images.length - 1;
+            if (prod.currentImgIndex >= prod.images.length) prod.currentImgIndex = 0;
+            renderProducts();
+        }
+
+        function openProductModal(id) {
+            const prod = productos.find(p => p.id === id);
+            if (!prod) return;
+            selectedProductForModal = prod;
+            prod.currentImgIndex = 0; 
+
+            document.getElementById('modal-title').innerText = prod.name;
+            document.getElementById('modal-price').innerText = `$${prod.price}`;
+            document.getElementById('modal-desc').innerText = prod.desc;
+            
+            updateModalImage();
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').style.display = 'none';
+        }
+
+        function updateModalImage() {
+            if (!selectedProductForModal) return;
+            const imgs = selectedProductForModal.images;
+            const currentImg = imgs[selectedProductForModal.currentImgIndex] || 'https://via.placeholder.com/350?text=Sin+Foto';
+            document.getElementById('modal-main-img').src = currentImg;
+        }
+
+        function moveModalImg(dir) {
+            if (!selectedProductForModal) return;
+            const imgs = selectedProductForModal.images;
+            if(imgs.length <= 1) return;
+            selectedProductForModal.currentImgIndex += dir;
+            if (selectedProductForModal.currentImgIndex < 0) selectedProductForModal.currentImgIndex = imgs.length - 1;
+            if (selectedProductForModal.currentImgIndex >= imgs.length) selectedProductForModal.currentImgIndex = 0;
+            updateModalImage();
+        }
+
+        function buyViaWhatsApp() {
+            if (!selectedProductForModal) return;
+            const message = `Hola Stilo Único, me interesa comprar el producto: ${selectedProductForModal.name} por el valor de $${selectedProductForModal.price}.`;
+            const url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function sendContactWhatsApp(e) {
+            e.preventDefault();
+            const name = document.getElementById('c-name').value;
+            const email = document.getElementById('c-email').value;
+            const msg = document.getElementById('c-message').value;
+
+            const fullText = `Hola, mi nombre es ${name} (${email}). Consulta desde la web:\n\n${msg}`;
+            const url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(fullText)}`;
+            window.open(url, '_blank');
+        }
+
+        function renderAdminStock() {
+            const list = document.getElementById('admin-stock-list');
+            list.innerHTML = '';
+            productos.forEach(p => {
+                list.innerHTML += `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td><strong>${p.name}</strong></td>
+                        <td>$${p.price}</td>
+                        <td>
+                            <input type="checkbox" ${p.promo ? 'checked' : ''} onchange="togglePromoStatus(${p.id}, this.checked)"> Incluir
+                        </td>
+                        <td>
+                            <button class="btn" style="background:#0066cc; padding: 5px 10px; font-size: 0.8rem; margin-right:5px;" onclick="editProductFromAdmin(${p.id})">Modificar</button>
+                            <button class="btn" style="background:#cc0000; padding: 5px 10px; font-size: 0.8rem;" onclick="deleteProductFromAdmin(${p.id})">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // CARGAR DATOS PARA MODIFICAR
+        function editProductFromAdmin(id) {
+            const prod = productos.find(p => p.id === id);
+            if (!prod) return;
+
+            document.getElementById('admin-edit-id').value = prod.id;
+            document.getElementById('admin-name').value = prod.name;
+            document.getElementById('admin-price').value = prod.price;
+            document.getElementById('admin-desc').value = prod.desc;
+            document.getElementById('admin-imgs').value = prod.images.join(', ');
+            document.getElementById('admin-is-promo').checked = prod.promo;
+
+            document.getElementById('form-admin-title').innerText = "Modificar Producto existente";
+            document.getElementById('btn-submit-admin').innerText = "Actualizar Producto";
+            document.getElementById('btn-cancel-edit').style.display = "inline-block";
+            
+            window.scrollTo({ top: document.getElementById('admin-panel').offsetTop, behavior: 'smooth' });
+        }
+
+        function cancelEditMode() {
+            document.getElementById('admin-edit-id').value = '';
+            document.getElementById('admin-name').value = '';
+            document.getElementById('admin-price').value = '';
+            document.getElementById('admin-desc').value = '';
+            document.getElementById('admin-imgs').value = '';
+            document.getElementById('admin-is-promo').checked = false;
+
+            document.getElementById('form-admin-title').innerText = "Agregar Nuevo Producto";
+            document.getElementById('btn-submit-admin').innerText = "Guardar Producto";
+            document.getElementById('btn-cancel-edit').style.display = "none";
+        }
+
+        // GUARDAR O ACTUALIZAR
+        function saveProductFromAdmin() {
+            const editId = document.getElementById('admin-edit-id').value;
+            const name = document.getElementById('admin-name').value.trim();
+            const price = parseFloat(document.getElementById('admin-price').value);
+            const desc = document.getElementById('admin-desc').value.trim();
+            const imgsInput = document.getElementById('admin-imgs').value.trim();
+            const isPromo = document.getElementById('admin-is-promo').checked;
+
+            if (!name || !price) {
+                alert("Por favor completa nombre y precio mínimos.");
+                return;
+            }
+
+            let imagesArray = [];
+            if(imgsInput) {
+                imagesArray = imgsInput.split(',').map(url => url.trim());
+            } else {
+                imagesArray.push("https://via.placeholder.com/500?text=Prenda");
+            }
+
+            if (editId) {
+                // Modo Edición
+                const index = productos.findIndex(p => p.id == editId);
+                if (index !== -1) {
+                    productos[index].name = name.toUpperCase();
+                    productos[index].price = price;
+                    productos[index].desc = desc || "Prenda de temporada.";
+                    productos[index].images = imagesArray;
+                    productos[index].promo = isPromo;
+                }
+                alert("Producto modificado correctamente.");
+            } else {
+                // Modo Nuevo Producto
+                const newId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;
+                productos.push({
+                    id: newId,
+                    name: name.toUpperCase(),
+                    price: price,
+                    desc: desc || "Nueva prenda de temporada disponible.",
+                    images: imagesArray,
+                    promo: isPromo,
+                    currentImgIndex: 0
+                });
+                alert("Producto guardado con éxito.");
+            }
+
+            cancelEditMode();
+            renderProducts();
+            renderAdminStock();
+        }
+
+        function togglePromoStatus(id, value) {
+            const prod = productos.find(p => p.id === id);
+            if (prod) {
+                prod.promo = value;
+                renderProducts();
+            }
+        }
+
+        function deleteProductFromAdmin(id) {
+            if (confirm("¿Eliminar este producto definitivamente?")) {
+                productos = productos.filter(p => p.id !== id);
+                renderProducts();
+                renderAdminStock();
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
