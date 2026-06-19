@@ -113,6 +113,8 @@
             display: flex;
             gap: 15px;
             transition: transform 0.5s ease-in-out;
+            overflow-x: auto;
+            padding-bottom: 10px;
         }
 
         .promo-img-only {
@@ -122,6 +124,7 @@
             cursor: pointer;
             border: 1px solid #eee;
             transition: transform 0.3s ease;
+            flex-shrink: 0;
         }
 
         .promo-img-only:hover {
@@ -327,6 +330,46 @@
         table th {
             background-color: #fafafa;
         }
+
+        .file-upload-wrapper {
+            background: #fdfdfd;
+            border: 2px dashed #bbb;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-wrapper:hover {
+            border-color: #000;
+        }
+
+        .image-preview-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preview-box {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border: 1px solid #ccc;
+        }
+
+        .preview-box img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        .preview-box .remove-img-btn {
+            position: absolute;
+            top: -5px; right: -5px;
+            background: red; color: white;
+            border: none; border-radius: 50%;
+            width: 18px; height: 18px;
+            font-size: 0.7rem; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -414,9 +457,20 @@
                     <label>Descripción detallada</label>
                     <textarea id="admin-desc" rows="3"></textarea>
                 </div>
+
                 <div class="form-group">
-                    <label>URLs de Imágenes (Separadas por coma si son varias)</label>
-                    <input type="text" id="admin-imgs" placeholder="https://ejemplo.com/1.jpg, https://ejemplo.com/2.jpg">
+                    <label>Fotos del Producto (PC o Celular)</label>
+                    <div class="file-upload-wrapper" onclick="document.getElementById('admin-file-input').click()">
+                        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
+                        <p>Hacé clic acá para seleccionar fotos</p>
+                        <input type="file" id="admin-file-input" multiple accept="image/*" style="display:none;" onchange="handleFileSelect(event)">
+                    </div>
+                    <div class="image-preview-container" id="admin-img-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>O ingresar URLs manuales (Separadas por coma si son varias)</label>
+                    <input type="text" id="admin-imgs" placeholder="https://ejemplo.com/1.jpg">
                 </div>
                 <div class="form-group">
                     <label>
@@ -443,39 +497,56 @@
         </div>
     </div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBa9Blp3x2idE2bZu5kKstJ0vohmT_URnM",
+            authDomain: "stilo-unico.firebaseapp.com",
+            databaseURL: "https://stilo-unico-default-rtdb.firebaseio.com",
+            projectId: "stilo-unico",
+            storageBucket: "stilo-unico.firebasestorage.app",
+            messagingSenderId: "540144035566",
+            appId: "1:540144035566:web:37b9e3c1365a3b3d55f5ff",
+            measurementId: "G-7DF4RG7TGL"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.dbRef = ref(db, 'productos/');
+        window.setFirebaseData = function(id, data) {
+            return set(ref(db, 'productos/' + id), data);
+        };
+        window.removeFirebaseData = function(id) {
+            return remove(ref(db, 'productos/' + id));
+        };
+
+        onValue(window.dbRef, (snapshot) => {
+            const data = snapshot.val();
+            window.productos = [];
+            if (data) {
+                for (let id in data) {
+                    window.productos.push(data[id]);
+                }
+            }
+            window.renderProducts();
+            window.renderAdminStock();
+        });
+    </script>
+
     <script>
-        const WHATSAPP_NUMBER = "59899000000"; 
+        const WHATSAPP_NUMBER = "5492920251745"; 
         const SECRET_KEY = "admin123";
 
         let logoClickCount = 0;
         let logoClickTimeout;
-
-        let productos = [
-            {
-                id: 1,
-                name: "Campera Denim Premium",
-                price: 4890,
-                desc: "Campera de jean oversize confeccionada con denim premium de alta resistencia.",
-                images: ["https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500"],
-                promo: true,
-                currentImgIndex: 0
-            },
-            {
-                id: 2,
-                name: "Buzo Oversize Hoodie Black",
-                price: 3200,
-                desc: "Buzo frisado de algodón rústico súper abrigado con capucha pesada.",
-                images: ["https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500"],
-                promo: true,
-                currentImgIndex: 0
-            }
-        ];
-
+        window.productos = [];
         let selectedProductForModal = null;
+        let uploadedImagesBase64 = [];
 
         function init() {
-            renderProducts();
-            renderAdminStock();
             setupKeyboardAccess();
         }
 
@@ -522,22 +593,58 @@
             window.scrollTo(0,0);
         }
 
-        function renderProducts() {
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.match('image.*')) continue;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Str = e.target.result;
+                    uploadedImagesBase64.push(base64Str);
+                    renderImagePreviews();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderImagePreviews() {
+            const container = document.getElementById('admin-img-preview');
+            container.innerHTML = '';
+            uploadedImagesBase64.forEach((base64, index) => {
+                container.innerHTML += `
+                    <div class="preview-box">
+                        <img src="${base64}">
+                        <button type="button" class="remove-img-btn" onclick="removeUploadedImage(${index})">&times;</button>
+                    </div>
+                `;
+            });
+        }
+
+        function removeUploadedImage(index) {
+            uploadedImagesBase64.splice(index, 1);
+            renderImagePreviews();
+        }
+
+        window.renderProducts = function() {
             const featuredContainer = document.getElementById('featured-products');
             const allContainer = document.getElementById('all-products');
             const promoTrack = document.getElementById('carousel-promo-track');
             
+            if(!featuredContainer || !allContainer || !promoTrack) return;
+
             featuredContainer.innerHTML = '';
             allContainer.innerHTML = '';
             promoTrack.innerHTML = '';
 
-            productos.forEach(p => {
+            window.productos.forEach(p => {
                 const cardHTML = createProductCardHTML(p);
                 allContainer.innerHTML += cardHTML;
                 featuredContainer.innerHTML += cardHTML;
 
                 if(p.promo) {
-                    const imgUrl = p.images[0] || 'https://via.placeholder.com/180x240?text=Sin+Foto';
+                    const imgUrl = (p.images && p.images[0]) || 'https://via.placeholder.com/180x240?text=Sin+Foto';
                     const imgElement = document.createElement('img');
                     imgElement.src = imgUrl;
                     imgElement.alt = p.name;
@@ -549,8 +656,9 @@
         }
 
         function createProductCardHTML(p) {
-            const currentImg = p.images[p.currentImgIndex] || 'https://via.placeholder.com/250x280?text=Sin+Foto';
-            const hasArrows = p.images.length > 1;
+            if (!p.currentImgIndex) p.currentImgIndex = 0;
+            const currentImg = (p.images && p.images[p.currentImgIndex]) || 'https://via.placeholder.com/250x280?text=Sin+Foto';
+            const hasArrows = p.images && p.images.length > 1;
 
             return `
                 <div class="product-card">
@@ -566,20 +674,21 @@
             `;
         }
 
-        function changeCardImage(id, dir) {
-            const prod = productos.find(p => p.id === id);
+        window.changeCardImage = function(id, dir) {
+            const prod = window.productos.find(p => p.id === id);
             if (!prod) return;
+            if (!prod.currentImgIndex) prod.currentImgIndex = 0;
             prod.currentImgIndex += dir;
             if (prod.currentImgIndex < 0) prod.currentImgIndex = prod.images.length - 1;
             if (prod.currentImgIndex >= prod.images.length) prod.currentImgIndex = 0;
-            renderProducts();
+            window.renderProducts();
         }
 
-        function openProductModal(id) {
-            const prod = productos.find(p => p.id === id);
+        window.openProductModal = function(id) {
+            const prod = window.productos.find(p => p.id === id);
             if (!prod) return;
             selectedProductForModal = prod;
-            prod.currentImgIndex = 0; 
+            selectedProductForModal.currentImgIndex = 0; 
 
             document.getElementById('modal-title').innerText = prod.name;
             document.getElementById('modal-price').innerText = `$${prod.price}`;
@@ -589,35 +698,35 @@
             document.getElementById('product-modal').style.display = 'flex';
         }
 
-        function closeProductModal() {
+        window.closeProductModal = function() {
             document.getElementById('product-modal').style.display = 'none';
         }
 
         function updateModalImage() {
             if (!selectedProductForModal) return;
             const imgs = selectedProductForModal.images;
-            const currentImg = imgs[selectedProductForModal.currentImgIndex] || 'https://via.placeholder.com/350?text=Sin+Foto';
+            const currentImg = (imgs && imgs[selectedProductForModal.currentImgIndex]) || 'https://via.placeholder.com/350?text=Sin+Foto';
             document.getElementById('modal-main-img').src = currentImg;
         }
 
-        function moveModalImg(dir) {
+        window.moveModalImg = function(dir) {
             if (!selectedProductForModal) return;
             const imgs = selectedProductForModal.images;
-            if(imgs.length <= 1) return;
+            if(!imgs || imgs.length <= 1) return;
             selectedProductForModal.currentImgIndex += dir;
             if (selectedProductForModal.currentImgIndex < 0) selectedProductForModal.currentImgIndex = imgs.length - 1;
             if (selectedProductForModal.currentImgIndex >= imgs.length) selectedProductForModal.currentImgIndex = 0;
             updateModalImage();
         }
 
-        function buyViaWhatsApp() {
+        window.buyViaWhatsApp = function() {
             if (!selectedProductForModal) return;
             const message = `Hola Stilo Único, me interesa comprar el producto: ${selectedProductForModal.name} por el valor de $${selectedProductForModal.price}.`;
             const url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
 
-        function sendContactWhatsApp(e) {
+        window.sendContactWhatsApp = function(e) {
             e.preventDefault();
             const name = document.getElementById('c-name').value;
             const email = document.getElementById('c-email').value;
@@ -628,37 +737,40 @@
             window.open(url, '_blank');
         }
 
-        function renderAdminStock() {
+        window.renderAdminStock = function() {
             const list = document.getElementById('admin-stock-list');
+            if(!list) return;
             list.innerHTML = '';
-            productos.forEach(p => {
+            window.productos.forEach(p => {
                 list.innerHTML += `
                     <tr>
                         <td>${p.id}</td>
                         <td><strong>${p.name}</strong></td>
                         <td>$${p.price}</td>
                         <td>
-                            <input type="checkbox" ${p.promo ? 'checked' : ''} onchange="togglePromoStatus(${p.id}, this.checked)"> Incluir
+                            <input type="checkbox" ${p.promo ? 'checked' : ''} onchange="window.togglePromoStatus(${p.id}, this.checked)"> Incluir
                         </td>
                         <td>
-                            <button class="btn" style="background:#0066cc; padding: 5px 10px; font-size: 0.8rem; margin-right:5px;" onclick="editProductFromAdmin(${p.id})">Modificar</button>
-                            <button class="btn" style="background:#cc0000; padding: 5px 10px; font-size: 0.8rem;" onclick="deleteProductFromAdmin(${p.id})">Eliminar</button>
+                            <button class="btn" style="background:#0066cc; padding: 5px 10px; font-size: 0.8rem; margin-right:5px;" onclick="window.editProductFromAdmin(${p.id})">Modificar</button>
+                            <button class="btn" style="background:#cc0000; padding: 5px 10px; font-size: 0.8rem;" onclick="window.deleteProductFromAdmin(${p.id})">Eliminar</button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        // CARGAR DATOS PARA MODIFICAR
-        function editProductFromAdmin(id) {
-            const prod = productos.find(p => p.id === id);
+        window.editProductFromAdmin = function(id) {
+            const prod = window.productos.find(p => p.id === id);
             if (!prod) return;
 
             document.getElementById('admin-edit-id').value = prod.id;
             document.getElementById('admin-name').value = prod.name;
             document.getElementById('admin-price').value = prod.price;
             document.getElementById('admin-desc').value = prod.desc;
-            document.getElementById('admin-imgs').value = prod.images.join(', ');
+            document.getElementById('admin-imgs').value = prod.images ? prod.images.filter(img => !img.startsWith('data:image')).join(', ') : '';
+            
+            uploadedImagesBase64 = prod.images ? prod.images.filter(img => img.startsWith('data:image')) : [];
+            renderImagePreviews();
             document.getElementById('admin-is-promo').checked = prod.promo;
 
             document.getElementById('form-admin-title').innerText = "Modificar Producto existente";
@@ -668,12 +780,14 @@
             window.scrollTo({ top: document.getElementById('admin-panel').offsetTop, behavior: 'smooth' });
         }
 
-        function cancelEditMode() {
+        window.cancelEditMode = function() {
             document.getElementById('admin-edit-id').value = '';
             document.getElementById('admin-name').value = '';
             document.getElementById('admin-price').value = '';
             document.getElementById('admin-desc').value = '';
             document.getElementById('admin-imgs').value = '';
+            uploadedImagesBase64 = [];
+            renderImagePreviews();
             document.getElementById('admin-is-promo').checked = false;
 
             document.getElementById('form-admin-title').innerText = "Agregar Nuevo Producto";
@@ -681,8 +795,7 @@
             document.getElementById('btn-cancel-edit').style.display = "none";
         }
 
-        // GUARDAR O ACTUALIZAR
-        function saveProductFromAdmin() {
+        window.saveProductFromAdmin = function() {
             const editId = document.getElementById('admin-edit-id').value;
             const name = document.getElementById('admin-name').value.trim();
             const price = parseFloat(document.getElementById('admin-price').value);
@@ -698,54 +811,49 @@
             let imagesArray = [];
             if(imgsInput) {
                 imagesArray = imgsInput.split(',').map(url => url.trim());
-            } else {
+            }
+            imagesArray = [...imagesArray, ...uploadedImagesBase64];
+
+            if (imagesArray.length === 0) {
                 imagesArray.push("https://via.placeholder.com/500?text=Prenda");
             }
 
-            if (editId) {
-                // Modo Edición
-                const index = productos.findIndex(p => p.id == editId);
-                if (index !== -1) {
-                    productos[index].name = name.toUpperCase();
-                    productos[index].price = price;
-                    productos[index].desc = desc || "Prenda de temporada.";
-                    productos[index].images = imagesArray;
-                    productos[index].promo = isPromo;
-                }
-                alert("Producto modificado correctamente.");
-            } else {
-                // Modo Nuevo Producto
-                const newId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;
-                productos.push({
-                    id: newId,
-                    name: name.toUpperCase(),
-                    price: price,
-                    desc: desc || "Nueva prenda de temporada disponible.",
-                    images: imagesArray,
-                    promo: isPromo,
-                    currentImgIndex: 0
-                });
-                alert("Producto guardado con éxito.");
+            let targetId = editId;
+            if (!targetId) {
+                targetId = window.productos.length > 0 ? Math.max(...window.productos.map(p => p.id)) + 1 : 1;
             }
 
-            cancelEditMode();
-            renderProducts();
-            renderAdminStock();
+            const productData = {
+                id: parseInt(targetId),
+                name: name.toUpperCase(),
+                price: price,
+                desc: desc || "Prenda de temporada.",
+                images: imagesArray,
+                promo: isPromo,
+                currentImgIndex: 0
+            };
+
+            window.setFirebaseData(targetId, productData).then(() => {
+                alert(editId ? "Producto modificado en Firebase." : "Producto guardado con éxito en Firebase.");
+                cancelEditMode();
+            }).catch((error) => {
+                alert("Error al sincronizar con Firebase: " + error.message);
+            });
         }
 
-        function togglePromoStatus(id, value) {
-            const prod = productos.find(p => p.id === id);
+        window.togglePromoStatus = function(id, value) {
+            const prod = window.productos.find(p => p.id === id);
             if (prod) {
                 prod.promo = value;
-                renderProducts();
+                window.setFirebaseData(id, prod);
             }
         }
 
-        function deleteProductFromAdmin(id) {
+        window.deleteProductFromAdmin = function(id) {
             if (confirm("¿Eliminar este producto definitivamente?")) {
-                productos = productos.filter(p => p.id !== id);
-                renderProducts();
-                renderAdminStock();
+                window.removeFirebaseData(id).then(() => {
+                    alert("Producto eliminado correctamente.");
+                });
             }
         }
 
