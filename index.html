@@ -47,7 +47,7 @@
             }
         }
 
-        /* Header adaptado a negro para combinar con el fondo del logo */
+        /* Header adaptado para alojar un logo más imponente */
         header {
             background-color: #000;
             border-bottom: 1px solid #222;
@@ -60,13 +60,13 @@
         .header-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 10px 20px;
+            padding: 5px 20px; /* Reducido un poco para balancear el tamaño del logo */
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        /* Estilos para el nuevo logo en imagen */
+        /* Estilos optimizados para el Logo Agrandado */
         .logo-container {
             display: flex;
             align-items: center;
@@ -77,16 +77,16 @@
         }
         
         .logo-container:hover {
-            transform: scale(1.05);
+            transform: scale(1.03);
         }
 
         .logo-img {
-            height: 60px; /* Tamaño ideal para que luzca en la barra */
+            height: 100px; /* Logo notablemente más grande */
             width: auto;
             display: block;
         }
 
-        /* Enlaces de navegación adaptados al fondo negro */
+        /* Enlaces de navegación adaptados */
         nav ul {
             display: flex;
             list-style: none;
@@ -105,7 +105,6 @@
             position: relative;
         }
 
-        /* Línea animada inferior al pasar el cursor sobre el menú */
         nav ul li a::after {
             content: '';
             position: absolute;
@@ -140,10 +139,11 @@
             animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
         }
 
+        /* Rediseño del Carrusel para mostrar exactamente 2 productos */
         .promo-carousel {
             background-color: #fff;
             border: 1px solid #e5e5e5;
-            padding: 20px;
+            padding: 25px;
             margin-bottom: 40px;
             position: relative;
             overflow: hidden;
@@ -153,7 +153,7 @@
 
         .promo-carousel h2 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             font-size: 1.25rem;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -167,14 +167,15 @@
 
         .carousel-track {
             display: flex;
-            gap: 15px;
-            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            gap: 20px;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             padding-bottom: 10px;
         }
 
+        /* Cada imagen ahora ocupa el espacio justo para que entren solo 2 en pantalla */
         .promo-img-only {
-            width: 180px;
-            height: 240px;
+            width: calc(50% - 10px); 
+            height: 400px; /* Un poco más alto para acompañar la proporción del diseño de 2 ítems */
             object-fit: cover;
             cursor: pointer;
             border: 1px solid #eee;
@@ -183,10 +184,17 @@
             border-radius: 4px;
         }
 
+        @media (max-width: 600px) {
+            .promo-img-only {
+                width: 100%; /* En celulares chicos se adapta a 1 para no verse minúsculo */
+                height: 320px;
+            }
+        }
+
         .promo-img-only:hover {
-            transform: scale(1.05) translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            filter: brightness(1.05);
+            transform: scale(1.02) translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            filter: brightness(1.03);
         }
 
         .products-grid {
@@ -521,7 +529,7 @@
         }
     </style>
 </head>
-<body>
+<body onload="init()">
 
     <header>
         <div class="header-container">
@@ -695,9 +703,8 @@
         let selectedProductForModal = null;
         let uploadedImagesBase64 = [];
         
-        // Variables para el autodesplazamiento del carrusel
         let promoInterval;
-        let currentPromoOffset = 0;
+        let currentPromoIndex = 0; // Cambiado a índice para mejor control con saltos de a 2
 
         function init() {
             setupKeyboardAccess();
@@ -812,9 +819,8 @@
                 }
             });
 
-            // Ocultar carrusel si no hay elementos promocionales
             document.getElementById('promo-carousel-wrapper').style.display = hasPromos ? 'block' : 'none';
-            currentPromoOffset = 0;
+            currentPromoIndex = 0;
             if(promoTrack) promoTrack.style.transform = `translateX(0px)`;
         }
 
@@ -847,26 +853,32 @@
             window.renderProducts();
         }
 
-        // Lógica del Carrusel Automatizado de Promociones
+        // Nueva lógica automatizada e inteligente para el carrusel de 2 elementos
         function startPromoCarousel() {
             clearInterval(promoInterval);
             promoInterval = setInterval(() => {
                 const track = document.getElementById('carousel-promo-track');
-                if(!track || track.children.length === 0) return;
-                
-                const itemWidth = 195; // Ancho de la imagen (180px) + gap (15px)
-                const maxVisibleWidth = track.parentElement.clientWidth;
-                const totalWidth = track.children.length * itemWidth;
-                
-                if(totalWidth <= maxVisibleWidth) return; // No hace falta mover si entra todo en pantalla
+                if(!track || track.children.length <= 2) return; 
 
-                currentPromoOffset -= itemWidth;
-                if (Math.abs(currentPromoOffset) >= totalWidth - maxVisibleWidth + 15) {
-                    currentPromoOffset = 0; // Reinicia al principio de manera limpia
+                // Al haber un gap de 20px, calculamos el salto exacto basándonos en el 50% del track contenedor
+                const stepPercent = 50; 
+                const totalItems = track.children.length;
+                
+                // Avanzamos de a 1 ítem para una transición suave, sabiendo que se ven 2 en pantalla
+                currentPromoIndex++;
+                
+                // Si llegamos al límite de elementos visibles, volvemos a cero
+                if (currentPromoIndex > totalItems - 2) {
+                    currentPromoIndex = 0;
                 }
                 
-                track.style.transform = `translateX(${currentPromoOffset}px)`;
-            }, 3000); // Cambia o desliza cada 3 segundos
+                // Desplazamiento limpio usando porcentajes dinámicos ajustados por CSS
+                track.style.transform = `translateX(-${currentPromoIndex * stepPercent}%) -${currentPromoIndex * 10}px`;
+                
+                // Alternativa simplificada usando flex layouts modernos
+                const offsetAmount = currentPromoIndex * (track.parentElement.clientWidth / 2);
+                track.style.transform = `translateX(-${currentPromoIndex * 50}%)`;
+            }, 3000); 
         }
 
         function pausePromoCarousel() {
@@ -900,7 +912,7 @@
             const currentImg = (imgs && imgs[selectedProductForModal.currentImgIndex]) || 'https://via.placeholder.com/350?text=Sin+Foto';
             
             const mainImg = document.getElementById('modal-main-img');
-            mainImg.style.opacity = 0; // Breve transición de cambio
+            mainImg.style.opacity = 0; 
             setTimeout(() => {
                 mainImg.src = currentImg;
                 mainImg.style.opacity = 1;
@@ -919,20 +931,58 @@
 
         window.buyViaWhatsApp = function() {
             if (!selectedProductForModal) return;
-            const message = `Hola Stilo Único, me interesa comprar el producto: ${selectedProductForModal.name} por el valor de $${selectedProductForModal.price}.`;
+            const message = `¡Hola! Me interesa este producto de Stilo Único:\n\n*Producto:* ${selectedProductForModal.name}\n*Precio:* $${selectedProductForModal.price}\n*ID:* ${selectedProductForModal.id}\n\n¿Tienen stock disponible?`;
             const url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
 
-        window.sendContactWhatsApp = function(e) {
-            e.preventDefault();
+        window.sendContactWhatsApp = function(event) {
+            event.preventDefault();
             const name = document.getElementById('c-name').value;
             const email = document.getElementById('c-email').value;
             const msg = document.getElementById('c-message').value;
 
-            const fullText = `Hola, mi nombre es ${name} (${email}). Consulta desde la web:\n\n${msg}`;
-            const url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(fullText)}`;
+            const message = `*Nueva Consulta - Stilo Único*\n\n*Nombre:* ${name}\n*Email:* ${email}\n*Mensaje:* ${msg}`;
+            const url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
+        }
+
+        // Métodos auxiliares de Admin
+        window.saveProductFromAdmin = function() {
+            const idEdit = document.getElementById('admin-edit-id').value;
+            const name = document.getElementById('admin-name').value.trim();
+            const price = parseFloat(document.getElementById('admin-price').value);
+            const desc = document.getElementById('admin-desc').value.trim();
+            const manualImgs = document.getElementById('admin-imgs').value.trim();
+            const isPromo = document.getElementById('admin-is-promo').checked;
+
+            if (!name || isNaN(price)) {
+                alert("Completá los campos obligatorios.");
+                return;
+            }
+
+            let finalImages = [];
+            if(uploadedImagesBase64.length > 0) {
+                finalImages = [...uploadedImagesBase64];
+            } else if (manualImgs) {
+                finalImages = manualImgs.split(',').map(u => u.trim());
+            }
+
+            const productId = idEdit ? parseInt(idEdit) : Date.now();
+
+            const productData = {
+                id: productId,
+                name: name,
+                price: price,
+                desc: desc || "Sin descripción disponible.",
+                images: finalImages,
+                promo: isPromo
+            };
+
+            window.setFirebaseData(productId, productData).then(() => {
+                alert("Guardado correctamente.");
+                cancelEditMode();
+            });
         }
 
         window.renderAdminStock = function() {
@@ -945,12 +995,10 @@
                         <td>${p.id}</td>
                         <td><strong>${p.name}</strong></td>
                         <td>$${p.price}</td>
+                        <td>${p.promo ? '✅ SÍ' : '❌ NO'}</td>
                         <td>
-                            <input type="checkbox" ${p.promo ? 'checked' : ''} onchange="window.togglePromoStatus(${p.id}, this.checked)"> Incluir
-                        </td>
-                        <td>
-                            <button class="btn" style="background:#0066cc; padding: 5px 10px; font-size: 0.8rem; margin-right:5px;" onclick="window.editProductFromAdmin(${p.id})">Modificar</button>
-                            <button class="btn" style="background:#cc0000; padding: 5px 10px; font-size: 0.8rem;" onclick="window.deleteProductFromAdmin(${p.id})">Eliminar</button>
+                            <button class="btn" style="padding:4px 8px; font-size:0.8rem; background:#222;" onclick="editProductFromAdmin(${p.id})">Editar</button>
+                            <button class="btn" style="padding:4px 8px; font-size:0.8rem; background:red;" onclick="deleteProductFromAdmin(${p.id})">Borrar</button>
                         </td>
                     </tr>
                 `;
@@ -958,104 +1006,41 @@
         }
 
         window.editProductFromAdmin = function(id) {
-            const prod = window.productos.find(p => p.id === id);
-            if (!prod) return;
+            const p = window.productos.find(prod => prod.id === id);
+            if(!p) return;
 
-            document.getElementById('admin-edit-id').value = prod.id;
-            document.getElementById('admin-name').value = prod.name;
-            document.getElementById('admin-price').value = prod.price;
-            document.getElementById('admin-desc').value = prod.desc;
-            document.getElementById('admin-imgs').value = prod.images ? prod.images.filter(img => !img.startsWith('data:image')).join(', ') : '';
+            document.getElementById('form-admin-title').innerText = "Editar Producto existente";
+            document.getElementById('admin-edit-id').value = p.id;
+            document.getElementById('admin-name').value = p.name;
+            document.getElementById('admin-price').value = p.price;
+            document.getElementById('admin-desc').value = p.desc;
+            document.getElementById('admin-is-promo').checked = !!p.promo;
             
-            uploadedImagesBase64 = prod.images ? prod.images.filter(img => img.startsWith('data:image')) : [];
+            uploadedImagesBase64 = p.images ? [...p.images] : [];
             renderImagePreviews();
-            document.getElementById('admin-is-promo').checked = prod.promo;
 
-            document.getElementById('form-admin-title').innerText = "Modificar Producto existente";
-            document.getElementById('btn-submit-admin').innerText = "Actualizar Producto";
             document.getElementById('btn-cancel-edit').style.display = "inline-block";
-            
-            window.scrollTo({ top: document.getElementById('admin-panel').offsetTop, behavior: 'smooth' });
+            document.querySelector('#admin-panel').scrollIntoView({behavior: 'smooth'});
         }
 
         window.cancelEditMode = function() {
-            document.getElementById('admin-edit-id').value = '';
-            document.getElementById('admin-name').value = '';
-            document.getElementById('admin-price').value = '';
-            document.getElementById('admin-desc').value = '';
-            document.getElementById('admin-imgs').value = '';
+            document.getElementById('form-admin-title').innerText = "Agregar Nuevo Producto";
+            document.getElementById('admin-edit-id').value = "";
+            document.getElementById('admin-name').value = "";
+            document.getElementById('admin-price').value = "";
+            document.getElementById('admin-desc').value = "";
+            document.getElementById('admin-imgs').value = "";
+            document.getElementById('admin-is-promo').checked = false;
             uploadedImagesBase64 = [];
             renderImagePreviews();
-            document.getElementById('admin-is-promo').checked = false;
-
-            document.getElementById('form-admin-title').innerText = "Agregar Nuevo Producto";
-            document.getElementById('btn-submit-admin').innerText = "Guardar Producto";
             document.getElementById('btn-cancel-edit').style.display = "none";
         }
 
-        window.saveProductFromAdmin = function() {
-            const editId = document.getElementById('admin-edit-id').value;
-            const name = document.getElementById('admin-name').value.trim();
-            const price = parseFloat(document.getElementById('admin-price').value);
-            const desc = document.getElementById('admin-desc').value.trim();
-            const imgsInput = document.getElementById('admin-imgs').value.trim();
-            const isPromo = document.getElementById('admin-is-promo').checked;
-
-            if (!name || !price) {
-                alert("Por favor completa nombre y precio mínimos.");
-                return;
-            }
-
-            let imagesArray = [];
-            if(imgsInput) {
-                imagesArray = imgsInput.split(',').map(url => url.trim());
-            }
-            imagesArray = [...imagesArray, ...uploadedImagesBase64];
-
-            if (imagesArray.length === 0) {
-                imagesArray.push("https://via.placeholder.com/500?text=Prenda");
-            }
-
-            let targetId = editId;
-            if (!targetId) {
-                targetId = window.productos.length > 0 ? Math.max(...window.productos.map(p => p.id)) + 1 : 1;
-            }
-
-            const productData = {
-                id: parseInt(targetId),
-                name: name.toUpperCase(),
-                price: price,
-                desc: desc || "Prenda de temporada.",
-                images: imagesArray,
-                promo: isPromo,
-                currentImgIndex: 0
-            };
-
-            window.setFirebaseData(targetId, productData).then(() => {
-                alert(editId ? "Producto modificado en Firebase." : "Producto guardado con éxito en Firebase.");
-                cancelEditMode();
-            }).catch((error) => {
-                alert("Error al sincronizar con Firebase: " + error.message);
-            });
-        }
-
-        window.togglePromoStatus = function(id, value) {
-            const prod = window.productos.find(p => p.id === id);
-            if (prod) {
-                prod.promo = value;
-                window.setFirebaseData(id, prod);
-            }
-        }
-
         window.deleteProductFromAdmin = function(id) {
-            if (confirm("¿Eliminar este producto definitivamente?")) {
-                window.removeFirebaseData(id).then(() => {
-                    alert("Producto eliminado correctamente.");
-                });
+            if(confirm("¿Seguro que querés eliminar este producto?")) {
+                window.removeFirebaseData(id);
             }
         }
-
-        window.onload = init;
     </script>
 </body>
 </html>
