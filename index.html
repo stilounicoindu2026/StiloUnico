@@ -16,46 +16,77 @@
         body {
             background-color: #f9f9f9;
             color: #333;
+            overflow-x: hidden;
         }
 
-        .top-bar {
-            background-color: #000;
-            color: #fff;
-            text-align: center;
-            padding: 8px 10px;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+        /* --- ANIMACIONES GLOBALES --- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleUp {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Header adaptado a negro para combinar con el fondo del logo */
         header {
-            background-color: #fff;
-            border-bottom: 1px solid #e5e5e5;
+            background-color: #000;
+            border-bottom: 1px solid #222;
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
 
         .header-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 15px 20px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .logo {
-            font-weight: bold;
-            font-size: 1.5rem;
-            text-decoration: none;
-            color: #000;
-            letter-spacing: 2px;
+        /* Estilos para el nuevo logo en imagen */
+        .logo-container {
+            display: flex;
+            align-items: center;
             cursor: pointer;
             user-select: none;
             -webkit-user-select: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-container:hover {
+            transform: scale(1.05);
         }
 
+        .logo-img {
+            height: 60px; /* Tamaño ideal para que luzca en la barra */
+            width: auto;
+            display: block;
+        }
+
+        /* Enlaces de navegación adaptados al fondo negro */
         nav ul {
             display: flex;
             list-style: none;
@@ -64,16 +95,37 @@
 
         nav ul li a {
             text-decoration: none;
-            color: #555;
+            color: #ccc;
             font-size: 0.95rem;
             text-transform: uppercase;
             font-weight: 500;
-            transition: color 0.3s;
+            transition: color 0.3s ease, transform 0.3s ease;
             cursor: pointer;
+            display: inline-block;
+            position: relative;
+        }
+
+        /* Línea animada inferior al pasar el cursor sobre el menú */
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            transform: scaleX(0);
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #fff;
+            transform-origin: bottom right;
+            transition: transform 0.25s ease-out;
+        }
+
+        nav ul li a:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
         }
 
         nav ul li a:hover {
-            color: #000;
+            color: #fff;
         }
 
         .section {
@@ -85,6 +137,7 @@
 
         .section.active {
             display: block;
+            animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
         }
 
         .promo-carousel {
@@ -94,6 +147,8 @@
             margin-bottom: 40px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            border-radius: 4px;
         }
 
         .promo-carousel h2 {
@@ -107,13 +162,13 @@
         .carousel-track-container {
             overflow: hidden;
             width: 100%;
+            position: relative;
         }
 
         .carousel-track {
             display: flex;
             gap: 15px;
-            transition: transform 0.5s ease-in-out;
-            overflow-x: auto;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             padding-bottom: 10px;
         }
 
@@ -123,12 +178,15 @@
             object-fit: cover;
             cursor: pointer;
             border: 1px solid #eee;
-            transition: transform 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, filter 0.3s ease;
             flex-shrink: 0;
+            border-radius: 4px;
         }
 
         .promo-img-only:hover {
-            transform: scale(1.03);
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            filter: brightness(1.05);
         }
 
         .products-grid {
@@ -146,6 +204,14 @@
             flex-direction: column;
             justify-content: space-between;
             position: relative;
+            border-radius: 4px;
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            border-color: #bbb;
         }
 
         .card-img-container {
@@ -156,22 +222,28 @@
             margin-bottom: 15px;
             overflow: hidden;
             cursor: pointer;
+            border-radius: 2px;
         }
 
         .card-img-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .product-card:hover .card-img-container img {
+            transform: scale(1.04);
         }
 
         .card-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(250,250,250,0.8);
-            border: none;
-            width: 30px;
-            height: 30px;
+            background: rgba(250,250,250,0.9);
+            border: 1px solid #ddd;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -179,27 +251,40 @@
             justify-content: center;
             font-size: 0.8rem;
             z-index: 2;
-            transition: background 0.3s;
+            opacity: 0;
+            transition: background 0.3s, color 0.3s, opacity 0.3s ease, transform 0.2s ease;
+        }
+
+        .product-card:hover .card-arrow {
+            opacity: 1;
         }
 
         .card-arrow:hover {
-            background: #fff;
+            background: #000;
+            color: #fff;
+            transform: translateY(-50%) scale(1.1);
         }
 
-        .card-arrow.prev { left: 5px; }
-        .card-arrow.next { right: 5px; }
+        .card-arrow.prev { left: 8px; }
+        .card-arrow.next { right: 8px; }
 
         .product-card h3 {
             font-size: 1rem;
             margin-bottom: 8px;
             text-transform: uppercase;
             cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .product-card:hover h3 {
+            color: #000;
         }
 
         .product-card .price {
             font-weight: bold;
             color: #111;
             margin-bottom: 15px;
+            font-size: 1.1rem;
         }
 
         .modal {
@@ -207,11 +292,13 @@
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             z-index: 200;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            backdrop-filter: blur(4px);
+            transition: opacity 0.3s ease;
         }
 
         .modal-content {
@@ -225,6 +312,21 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        }
+
+        .modal.open {
+            display: flex;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .modal.open .modal-content {
+            opacity: 1;
+            transform: scale(1);
         }
 
         @media(min-width: 600px) {
@@ -239,10 +341,17 @@
         .close-modal {
             position: absolute;
             top: 15px; right: 20px;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
             background: none;
             border: none;
+            color: #666;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .close-modal:hover {
+            color: #000;
+            transform: rotate(90deg);
         }
 
         .modal-carousel {
@@ -250,10 +359,18 @@
             width: 100%;
             height: 350px;
             background: #f0f0f0;
+            overflow: hidden;
+            border-radius: 4px;
         }
 
         .modal-carousel img {
             width: 100%; height: 100%; object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-carousel .card-arrow {
+            opacity: 1;
+            background: rgba(255,255,255,0.8);
         }
 
         .contact-form {
@@ -266,8 +383,16 @@
 
         .contact-form input, .contact-form textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            outline: none;
+        }
+
+        .contact-form input:focus, .contact-form textarea:focus {
+            border-color: #000;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.1);
         }
 
         .btn {
@@ -279,10 +404,17 @@
             font-weight: bold;
             cursor: pointer;
             letter-spacing: 1px;
+            border-radius: 4px;
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
         }
 
         .btn:hover {
-            background: #333;
+            background: #222;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
         }
 
         #admin-panel {
@@ -291,6 +423,7 @@
             border-top: 2px solid #000;
             padding: 30px 20px;
             margin-top: 50px;
+            animation: fadeIn 0.5s ease;
         }
 
         .admin-section {
@@ -299,7 +432,7 @@
         }
 
         .form-group {
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
 
         .form-group label {
@@ -310,8 +443,9 @@
 
         .form-group input, .form-group textarea, .form-group select {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ccc;
+            border-radius: 4px;
         }
 
         table {
@@ -319,11 +453,14 @@
             border-collapse: collapse;
             margin-top: 20px;
             background: #fff;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         table th, table td {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 12px;
             text-align: left;
         }
 
@@ -334,14 +471,17 @@
         .file-upload-wrapper {
             background: #fdfdfd;
             border: 2px dashed #bbb;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             margin-bottom: 10px;
+            border-radius: 4px;
+            transition: border-color 0.3s ease, background 0.3s ease;
         }
 
         .file-upload-wrapper:hover {
             border-color: #000;
+            background: #f7f7f7;
         }
 
         .image-preview-container {
@@ -356,6 +496,9 @@
             width: 80px;
             height: 80px;
             border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+            animation: scaleUp 0.3s ease;
         }
 
         .preview-box img {
@@ -364,21 +507,27 @@
 
         .preview-box .remove-img-btn {
             position: absolute;
-            top: -5px; right: -5px;
-            background: red; color: white;
+            top: 2px; right: 2px;
+            background: rgba(255,0,0,0.8); color: white;
             border: none; border-radius: 50%;
-            width: 18px; height: 18px;
-            font-size: 0.7rem; cursor: pointer;
+            width: 20px; height: 20px;
+            font-size: 0.8rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .preview-box .remove-img-btn:hover {
+            background: rgba(200,0,0,1);
         }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">Envíos a todo el país - 3 cuotas sin interés</div>
-
     <header>
         <div class="header-container">
-            <a class="logo" id="logo-btn" onclick="handleLogoClick()">STILO ÚNICO</a>
+            <div class="logo-container" id="logo-btn" onclick="handleLogoClick()">
+                <img src="IMG_8144.PNG" alt="Stilo Único" class="logo-img">
+            </div>
             <nav>
                 <ul>
                     <li><a onclick="switchSection('inicio')">Inicio</a></li>
@@ -392,22 +541,22 @@
     <section id="inicio" class="section active">
         <div class="promo-carousel" id="promo-carousel-wrapper">
             <h2>Promociones / Tendencias</h2>
-            <div class="carousel-track-container">
+            <div class="carousel-track-container" onmouseenter="pausePromoCarousel()" onmouseleave="startPromoCarousel()">
                 <div class="carousel-track" id="carousel-promo-track"></div>
             </div>
         </div>
 
-        <h2 style="text-align: center; margin-bottom: 30px; text-transform: uppercase;">Novedades</h2>
+        <h2 style="text-align: center; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px;">Novedades</h2>
         <div class="products-grid" id="featured-products"></div>
     </section>
 
     <section id="productos-all" class="section">
-        <h2 style="text-align: center; margin-bottom: 30px; text-transform: uppercase;">Catálogo Completo</h2>
+        <h2 style="text-align: center; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px;">Catálogo Completo</h2>
         <div class="products-grid" id="all-products"></div>
     </section>
 
     <section id="contacto" class="section">
-        <h2 style="text-align: center; margin-bottom: 30px; text-transform: uppercase;">Contacto</h2>
+        <h2 style="text-align: center; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px;">Contacto</h2>
         <form class="contact-form" onsubmit="sendContactWhatsApp(event)">
             <input type="text" id="c-name" placeholder="Nombre completo" required>
             <input type="email" id="c-email" placeholder="Correo electrónico" required>
@@ -416,7 +565,7 @@
         </form>
     </section>
 
-    <div class="modal" id="product-modal">
+    <div class="modal" id="product-modal" onclick="if(event.target === this) closeProductModal()">
         <div class="modal-content">
             <button class="close-modal" onclick="closeProductModal()">&times;</button>
             <div class="modal-detail-layout">
@@ -441,7 +590,7 @@
         <div class="admin-section">
             <h2 style="margin-bottom: 20px; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 10px;">Gestión de Productos (Administrador)</h2>
             
-            <div style="background: #fff; padding: 20px; border: 1px solid #ccc; margin-bottom: 30px;">
+            <div style="background: #fff; padding: 20px; border: 1px solid #ccc; margin-bottom: 30px; border-radius: 4px;">
                 <h3 id="form-admin-title">Agregar Nuevo Producto</h3>
                 <input type="hidden" id="admin-edit-id" value="">
                 
@@ -545,9 +694,14 @@
         window.productos = [];
         let selectedProductForModal = null;
         let uploadedImagesBase64 = [];
+        
+        // Variables para el autodesplazamiento del carrusel
+        let promoInterval;
+        let currentPromoOffset = 0;
 
         function init() {
             setupKeyboardAccess();
+            startPromoCarousel();
         }
 
         function checkAdminAccess() {
@@ -589,8 +743,9 @@
 
         function switchSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            window.scrollTo(0,0);
+            const targetSection = document.getElementById(sectionId);
+            targetSection.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function handleFileSelect(event) {
@@ -638,12 +793,15 @@
             allContainer.innerHTML = '';
             promoTrack.innerHTML = '';
 
+            let hasPromos = false;
+
             window.productos.forEach(p => {
                 const cardHTML = createProductCardHTML(p);
                 allContainer.innerHTML += cardHTML;
                 featuredContainer.innerHTML += cardHTML;
 
                 if(p.promo) {
+                    hasPromos = true;
                     const imgUrl = (p.images && p.images[0]) || 'https://via.placeholder.com/180x240?text=Sin+Foto';
                     const imgElement = document.createElement('img');
                     imgElement.src = imgUrl;
@@ -653,6 +811,11 @@
                     promoTrack.appendChild(imgElement);
                 }
             });
+
+            // Ocultar carrusel si no hay elementos promocionales
+            document.getElementById('promo-carousel-wrapper').style.display = hasPromos ? 'block' : 'none';
+            currentPromoOffset = 0;
+            if(promoTrack) promoTrack.style.transform = `translateX(0px)`;
         }
 
         function createProductCardHTML(p) {
@@ -684,6 +847,32 @@
             window.renderProducts();
         }
 
+        // Lógica del Carrusel Automatizado de Promociones
+        function startPromoCarousel() {
+            clearInterval(promoInterval);
+            promoInterval = setInterval(() => {
+                const track = document.getElementById('carousel-promo-track');
+                if(!track || track.children.length === 0) return;
+                
+                const itemWidth = 195; // Ancho de la imagen (180px) + gap (15px)
+                const maxVisibleWidth = track.parentElement.clientWidth;
+                const totalWidth = track.children.length * itemWidth;
+                
+                if(totalWidth <= maxVisibleWidth) return; // No hace falta mover si entra todo en pantalla
+
+                currentPromoOffset -= itemWidth;
+                if (Math.abs(currentPromoOffset) >= totalWidth - maxVisibleWidth + 15) {
+                    currentPromoOffset = 0; // Reinicia al principio de manera limpia
+                }
+                
+                track.style.transform = `translateX(${currentPromoOffset}px)`;
+            }, 3000); // Cambia o desliza cada 3 segundos
+        }
+
+        function pausePromoCarousel() {
+            clearInterval(promoInterval);
+        }
+
         window.openProductModal = function(id) {
             const prod = window.productos.find(p => p.id === id);
             if (!prod) return;
@@ -695,18 +884,27 @@
             document.getElementById('modal-desc').innerText = prod.desc;
             
             updateModalImage();
-            document.getElementById('product-modal').style.display = 'flex';
+            
+            const modal = document.getElementById('product-modal');
+            modal.classList.add('open');
         }
 
         window.closeProductModal = function() {
-            document.getElementById('product-modal').style.display = 'none';
+            const modal = document.getElementById('product-modal');
+            modal.classList.remove('open');
         }
 
         function updateModalImage() {
             if (!selectedProductForModal) return;
             const imgs = selectedProductForModal.images;
             const currentImg = (imgs && imgs[selectedProductForModal.currentImgIndex]) || 'https://via.placeholder.com/350?text=Sin+Foto';
-            document.getElementById('modal-main-img').src = currentImg;
+            
+            const mainImg = document.getElementById('modal-main-img');
+            mainImg.style.opacity = 0; // Breve transición de cambio
+            setTimeout(() => {
+                mainImg.src = currentImg;
+                mainImg.style.opacity = 1;
+            }, 150);
         }
 
         window.moveModalImg = function(dir) {
